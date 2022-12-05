@@ -1,5 +1,7 @@
 package controllers
 
+import entities.TransactionDTO
+
 import javax.inject._
 import play.api.mvc._
 import services.ClearingService
@@ -8,8 +10,8 @@ import services.ClearingService
 class ClearingController @Inject()(cc: ControllerComponents, clearingService: ClearingService) extends AbstractController(cc) {
 
   def handlePayment(): Action[AnyContent] = Action { _ =>
-    val result = clearingService.handlePayment("1", "2")
-    Ok(result)
+    clearingService.handlePayment(TransactionDTO("1", "2", "3", "4", "5", 6))
+    Ok("handlePayment")
   }
 
 
