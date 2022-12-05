@@ -1,0 +1,22 @@
+bank:
+  name: bank1
+
+
+
+spring:
+  datasource:
+    url: ...
+    username: ...
+    password: ...
+
+  jpa:
+    database: POSTGRESQL
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+
