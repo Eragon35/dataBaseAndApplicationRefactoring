@@ -8,7 +8,9 @@ import com.example.bankservice.repository.BankTransactionRepository;
 import com.example.bankservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
 import java.util.List;
@@ -29,15 +31,17 @@ public class BankTransactionService {
     private String bankName;
 
 
-    public BankTransaction create(BankTransactionDTO dto) throws Exception {
+    public BankTransaction create(BankTransactionDTO dto){
         BankTransaction bt = new BankTransaction();
         bt.setBankTransactionStatus(BankTransactionStatus.PROCESSING);
         bt.setAmount(dto.getAmount());
-        bt.setTransactTo(dto.getTransactTo());
+        bt.setTransactTo(dto.getToBank() + "@" + dto.getToUser());
 
-        Optional<User> userOpt = userRepository.findById(dto.getUserId());
+        Optional<User> userOpt = userRepository.findUserByUsername(dto.getFromUser());
 
-        if(userOpt.isEmpty()) throw new Exception("User is not found!");
+        if (userOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User is not found!");
+        }
         bt.setUser(userOpt.get());
 
         bankTransactionRepository.save(bt);
@@ -47,10 +51,12 @@ public class BankTransactionService {
 
     }
 
-    public BankTransaction getById(Long id) throws Exception {
+    public BankTransaction getById(Long id) {
         Optional<BankTransaction> btOpt = bankTransactionRepository.findById(id);
 
-        if(btOpt.isEmpty()) throw new Exception("Transaction is not found!");
+        if (btOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Transaction is not found!");
+        }
 
         //checks here
 
@@ -60,18 +66,25 @@ public class BankTransactionService {
     @Transactional
     public List<BankTransaction> getAllByUserName(String name) {
 
-        User user = userRepository.findUserByUsername(name);
+        Optional<User> userOpt = userRepository.findUserByUsername(name);
 
-        //user check here
+        if (userOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User is not found");
+        }
 
-        List<BankTransaction> list = bankTransactionRepository.findAllByUser(user);
+        return bankTransactionRepository.findAllByUser(userOpt.get());
 
-        return list;
     }
 
     @Transactional
     public void updateTransactionStatus(Long transactionId, BankTransactionStatus status) {
-        BankTransaction transaction = bankTransactionRepository.getById(transactionId);
+        Optional<BankTransaction> transactionOpt = bankTransactionRepository.findById(transactionId);
+
+        if (transactionOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Transaction is not found");
+        }
+
+        BankTransaction transaction = transactionOpt.get();
         transaction.setBankTransactionStatus(status);
 
         bankTransactionRepository.save(transaction);
