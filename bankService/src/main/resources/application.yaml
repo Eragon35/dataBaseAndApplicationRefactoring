@@ -1,8 +1,6 @@
 bank:
   name: bank1
 
-
-
 spring:
   datasource:
     url: ...
@@ -18,5 +16,11 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: false
+
+
+jwt:
+  token:
+    secret: secret_key
+    expired: 360000000
 
 

@@ -7,9 +7,10 @@ import com.example.bankservice.entity.enums.UserStatus;
 import com.example.bankservice.repository.UserRepository;
 import com.example.bankservice.repository.UserRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-import javax.swing.text.html.Option;
 import javax.transaction.Transactional;
 import java.util.Optional;
 
@@ -23,11 +24,14 @@ public class UserService {
 
     @Transactional
     public User create(UserDTO dto) {
+        Optional<User> userOpt = userRepository.findUserByUsername(dto.getUsername());
+
+        if (userOpt.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "User with this username is already exist");
+        }
+
         User user = new User();
         user.setUsername(dto.getUsername());
-
-        //checks here
-
         user.setPassword(dto.getPassword());
         user.setEmail(dto.getEmail());
         user.setPhoneNumber(dto.getEmail());
@@ -42,16 +46,23 @@ public class UserService {
     }
 
     public User getById(Long id) {
-        User user = userRepository.getById(id);
+        Optional<User> userOpt = userRepository.findById(id);
 
-        return user;
+        if(userOpt.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User is not found");
+        }
 
+        return userOpt.get();
     }
 
     public User getByName(String name) {
-        User user = userRepository.findUserByUsername(name);
+        Optional<User> userOpt = userRepository.findUserByUsername(name);
 
-        return user;
+        if(userOpt.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User is not found");
+        }
+
+        return userOpt.get();
     }
 
     @Transactional
@@ -71,6 +82,13 @@ public class UserService {
     }
 
     public void delete(Long id) {
+
+        Optional<User> userOpt = userRepository.findById(id);
+
+        if(userOpt.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User is not found");
+        }
+
         userRepository.deleteById(id);
     }
 
