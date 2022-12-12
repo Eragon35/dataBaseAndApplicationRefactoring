@@ -1,6 +1,3 @@
 package entities
 
-case class UserDTO(id: String,
-                   firstName: String,
-                   lastName: String,
-                   passport: Int)
+case class UserDTO(firstName: String, lastName: String, passport: Int)
