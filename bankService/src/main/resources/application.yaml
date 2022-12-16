@@ -1,6 +1,3 @@
-bank:
-  name: bank1
-
 spring:
   datasource:
     url: ...
@@ -17,10 +14,14 @@ spring:
       ddl-auto: update
     show-sql: false
 
-
 jwt:
   token:
     secret: secret_key
     expired: 360000000
 
+bank:
+  name: bank1
+  key_token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYmFuazEiLCJjb3VudHJ5IjoiUnVzc2lhIiwiaWQiOjMyMjh9.KvcgfR4jpcDmCGuYtm0MgkvnzRhX80oEtVmKvAc9HXk
 
+central_bank:
+  url: http://localhost:8081
