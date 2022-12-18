@@ -23,6 +23,8 @@ public class User {
     private String email;
     private String phoneNumber;
 
+    private Double amount;
+
     @ManyToOne
     @JoinColumn(name = "user_role_id")
     private UserRole userRole;

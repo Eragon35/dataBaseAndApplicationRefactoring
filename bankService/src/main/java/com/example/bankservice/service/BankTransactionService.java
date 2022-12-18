@@ -23,9 +23,12 @@ public class BankTransactionService {
     BankTransactionRepository bankTransactionRepository;
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    UserService userService;
+
 
     @Autowired
-    RequestService requestService;
+    CentralBankService centralBankService;
 
     @Value("${bank.name}")
     private String bankName;
@@ -44,12 +47,20 @@ public class BankTransactionService {
         }
         bt.setUser(userOpt.get());
 
+        dto.setFromBank(bankName);
         bankTransactionRepository.save(bt);
-        requestService.sendRequest(bt); // send a req to central bank
+        boolean status = centralBankService.sendTransaction(dto); // send a req to central bank
+
+        if(status){
+            bt.setBankTransactionStatus(BankTransactionStatus.APPROVED);
+            userService.updateAmount(userOpt.get().getUsername(), -1 * dto.getAmount());
+        }else{
+            bt.setBankTransactionStatus(BankTransactionStatus.DECLINED);
+        }
 
         return bt;
-
     }
+
 
     public BankTransaction getById(Long id) {
         Optional<BankTransaction> btOpt = bankTransactionRepository.findById(id);

@@ -92,5 +92,11 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
+    public void updateAmount(String name, Double diff){
+        User user = getByName(name);
+        user.setAmount(user.getAmount() + diff);
+
+        userRepository.save(user);
+    }
 
 }
