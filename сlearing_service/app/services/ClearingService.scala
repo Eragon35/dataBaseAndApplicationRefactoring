@@ -3,7 +3,10 @@ package services
 import com.typesafe.config.ConfigFactory
 import entities.{BankTable, DebtDTO, TransactionDTO, TransactionTable}
 import models.UuidHelper
+import play.api.Logging
+import play.api.libs.json.{Format, Json}
 import slick.jdbc.PostgresProfile.api._
+
 import scala.language.postfixOps
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -21,7 +24,7 @@ trait ClearingService {
     def handlePayment(transaction: TransactionDTO): String
 }
 
-class ClearingServiceImpl @Inject()(ws: WSClient) extends ClearingService{
+class ClearingServiceImpl @Inject()(ws: WSClient) extends ClearingService with Logging{
     val mydb = Database.forConfig("mydb")
 
     private val transactionTable = TableQuery[TransactionTable]
@@ -49,7 +52,8 @@ class ClearingServiceImpl @Inject()(ws: WSClient) extends ClearingService{
     def handlePayment(transaction: TransactionDTO): String = {
         val url = ConfigFactory.load(ClassLoaderUtil.defaultClassLoader)
             .getConfig(transaction.bankReceiver).getString("url")
-        ws.url(url).withBody(transaction).execute("POST").map { response =>
+        ws.url(url).withBody(Json.toJson(transaction)).execute("POST").map { response =>
+            logger.info("Response from bank " + response.json)
             if (response.status != 200) return "Ошибка соединения с банком получателем"
         }
         try {
@@ -67,4 +71,6 @@ class ClearingServiceImpl @Inject()(ws: WSClient) extends ClearingService{
         }
         ""
     }
+
+    implicit val transactionFormat: Format[TransactionDTO] = Json.format[TransactionDTO]
 }
